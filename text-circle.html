@@ -3,12 +3,7 @@
 </head>
 
 <body>
-  <nav class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <a class="navbar-brand" href="#">TextCircle</a>
-      <p class="navbar-text navbar-right">{{> loginButtons}}</p>
-    </div>
-  </nav>
+  {{> navbar}}
   <div class="container">
     <div class="row">
       <div class="col-md-12">
@@ -29,6 +24,20 @@
 <!-- <template name="date_display">
   {{current_date}}
 </template> -->
+
+<template name="navbar">
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">TextCircle</a>
+      <ul class="nav navbar-nav">
+        <li>
+          <a href="#" class="js-add-doc"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>New Document</a>
+        </li>
+      </ul>
+      <p class="navbar-text navbar-right">{{> loginButtons}}</p>
+    </div>
+  </nav>
+</template>
 
 <template name="editor">
   {{>sharejsCM docid=docid onRender=config id="editor"}}

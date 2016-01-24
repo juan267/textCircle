@@ -11,12 +11,8 @@ if (Meteor.isClient) {
 
   Template.editor.helpers({
     docid: function(){
-      var doc = Documents.findOne()
-      if (doc) {
-        return doc._id
-      } else {
-        return undefined
-      }
+      setCurrentDoc();
+      return Session.get('docid')
     },
     config:function(){
       return function(editor){
@@ -45,6 +41,28 @@ if (Meteor.isClient) {
       return users
     }
   })
+
+  /////////
+  // EVENTS
+  /////////
+
+  Template.navbar.events({
+    "click .js-add-doc": function(event) {
+      event.preventDefault()
+      console.log("Added new Documetn")
+      var user = Meteor.user()
+      if (!user) {
+        alert("You need to be logged in")
+      } else {
+        Meteor.call("addDoc", function(error, response) { // Asyncronos programing Methods run asycncronosly
+          if (!error) {
+            Session.set('docid', response)
+          }
+        })
+      }
+    }
+  })
+
 } // is client end
 
 if (Meteor.isServer) {
@@ -57,6 +75,20 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
+  addDoc: function() {
+    var user_id = this.userId
+    if (!user_id) {
+      return
+    } else {
+      var doc = {
+        owner: user_id,
+        title: "New document",
+        createdOn: new Date()
+      }
+      var id = Documents.insert(doc)
+      return id
+    }
+  },
   addEditinguser: function() {
     var doc = Documents.findOne()
     if (!doc) {return;} // Give up
@@ -75,6 +107,15 @@ Meteor.methods({
   }
 })
 
+
+function setCurrentDoc() {
+  if (!Session.get("docid")) {
+    var doc = Documents.findOne()
+    if (doc) {
+      Session.set('docid', doc._id)
+    }
+  }
+};
 
 function fixObjectKeys(obj) {
   var newObj = {};
