@@ -1,0 +1,9 @@
+/* CSS declarations go here */
+
+body { padding-top: 70px; }
+
+#viewer-iframe {
+  border: 1px solid black;
+  width: 100%;
+  resize: vertical;
+}
