@@ -24,7 +24,7 @@ if (Meteor.isClient) {
         editor.setOption("theme", "monokai")
         editor.on("change", function(cm_editor, info){
           $('#viewer-iframe').contents().find("html").html(cm_editor.getValue())
-            Meteor.call('addEditinguser')
+            Meteor.call('addEditinguser', Session.get('docid'))
         })
       }
     }
@@ -32,7 +32,7 @@ if (Meteor.isClient) {
 
   Template.editingUsers.helpers({
     users: function(){
-      var doc = Documents.findOne()
+      var doc = Documents.findOne({_id: Session.get('docid')})
       if (!doc) {return};
       var eusers = EditingUsers.findOne({docid: doc._id})
       if (!eusers) {return};
@@ -162,15 +162,15 @@ Meteor.methods({
       return id
     }
   },
-  addEditinguser: function() {
-    var doc = Documents.findOne()
+  addEditinguser: function(docid) {
+    var doc = Documents.findOne({_id: docid})
     if (!doc) {return;} // Give up
     if (!this.userId) {return;} // Give up
     var user = Meteor.user().profile
     var eusers = EditingUsers.findOne({docid: doc._id})
     if (!eusers) {
       eusers = {
-        docid: doc._id,
+        docid: docid,
         users: {}
       }
     }
