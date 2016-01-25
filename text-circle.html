@@ -7,6 +7,11 @@
   <div class="container">
     <div class="row">
       <div class="col-md-12">
+        {{> docMeta}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
         {{> editingUsers}}
       </div>
     </div>
@@ -33,10 +38,39 @@
         <li>
           <a href="#" class="js-add-doc"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>New Document</a>
         </li>
+        <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Documents<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            {{#each documents}}
+              <li><a href="#" class="js-load-doc">{{title}}</a></li>
+            {{/each}}
+          </ul>
+        </li>
       </ul>
       <p class="navbar-text navbar-right">{{> loginButtons}}</p>
     </div>
   </nav>
+</template>
+
+<template name="docMeta">
+  {{#with document}}
+    <span class="h1">{{> editableText collection="documents" field="title"}}   </span>
+    <span class="h1">Owner: {{owner}}</span>
+    {{#if ownDocument }}
+    <div class="checkbox">
+       <label>
+         <input type="checkbox" class="js-tog-private" checked={{isPrivate}}> Private
+       </label>
+     </div>
+    {{/if}}
+  {{/with}}
+</template>
+
+<template name="editingUsers">
+  Editors:
+  {{#each users}}
+    <span class="label label-success">{{firstname}}</span>
+  {{/each}}
 </template>
 
 <template name="editor">
@@ -48,9 +82,3 @@
   </iframe>
 </template>
 
-<template name="editingUsers">
-  Editors:
-  {{#each users}}
-    <span class="label label-success">{{firstname}}</span>
-  {{/each}}
-</template>

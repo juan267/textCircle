@@ -3,6 +3,10 @@ EditingUsers = new Mongo.Collection('editUsers')
 
 if (Meteor.isClient) {
 
+  Meteor.subscribe('editUsers');
+  Meteor.subscribe('documents');
+  Meteor.subscribe('users');
+
   // Every 1 second update de session value of current_date
   // set interval call repetaly the function
   // Meteor.setInterval(function(){
@@ -42,6 +46,45 @@ if (Meteor.isClient) {
     }
   })
 
+  Template.navbar.helpers({
+    documents: function() {
+      return Documents.find({})
+    }
+  })
+
+  Template.docMeta.helpers({
+    document: function() {
+      return Documents.findOne({_id: Session.get('docid')})
+    },
+    owner: function() {
+      var user = Meteor.users.findOne({_id: this.owner})
+      if (user) {
+        return user.profile["first-name"]
+      } else {
+        return "Anonymous"
+      }
+    },
+    ownDocument: function() {
+      var doc = Documents.findOne({_id: Session.get('docid'), owner: Meteor.userId()})
+      if (doc) {
+        return true
+      }else{
+        return false
+      }
+    }
+  })
+
+  Template.editableText.helpers({
+    userCanEdit: function(doc, Collection) {
+      var doc = Documents.findOne({_id: Session.get("docid"), owner: Meteor.userId()})
+      if (doc) {
+        return true
+      } else {
+        return false
+      }
+    }
+  })
+
   /////////
   // EVENTS
   /////////
@@ -60,9 +103,21 @@ if (Meteor.isClient) {
           }
         })
       }
+    },
+    "click .js-load-doc": function(event) {
+      Session.set('docid', this._id)
     }
   })
 
+  Template.docMeta.events({
+      "click .js-tog-private": function(event) {
+      var doc = {
+        _id: Session.get('docid'),
+        isPrivate: event.target.checked
+      }
+      Meteor.call("updateDocIsPrivate", doc)
+    }
+  })
 } // is client end
 
 if (Meteor.isServer) {
@@ -71,7 +126,24 @@ if (Meteor.isServer) {
     if (!Documents.findOne()) {
       Documents.insert({title:'My new Document'});
     }
-  });
+  })
+
+  Meteor.publish('documents', function(){
+    return Documents.find({
+      $or: [
+        {isPrivate: false},
+        {owner: this.userId}
+      ]
+    })
+  })
+
+  Meteor.publish("editUsers", function(){
+    return EditingUsers.find({})
+  })
+
+  Meteor.publish("users", function() {
+    return Meteor.users.find({})
+  })
 }
 
 Meteor.methods({
@@ -83,7 +155,8 @@ Meteor.methods({
       var doc = {
         owner: user_id,
         title: "New document",
-        createdOn: new Date()
+        createdOn: new Date(),
+        isPrivate: false
       }
       var id = Documents.insert(doc)
       return id
@@ -104,6 +177,13 @@ Meteor.methods({
     user.lasEdit = new Date();
     eusers.users[this.userId] = user;
     EditingUsers.upsert({_id:eusers._id}, eusers)
+  },
+  updateDocIsPrivate: function(doc) {
+    var realDoc = Documents.findOne({_id: doc._id, owner: this.userId})
+    if (realDoc) {
+      realDoc.isPrivate = doc.isPrivate
+      Documents.update({_id: doc._id}, realDoc)
+    }
   }
 })
 
